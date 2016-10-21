@@ -2,8 +2,6 @@
 #include "Robots.h"
 
 
-Arduboy ab;
-
 Game_t game;
 
 PROGMEM unsigned const  char bitmap[] = { 
@@ -38,10 +36,9 @@ PROGMEM const unsigned char arrow2[] =
 
 void setup() 
 {
-  ab.beginNoLogo();
-  ab.setFrameRate(30);
+  game.ab.beginNoLogo();
+  game.ab.setFrameRate(30);
 
-  game.ab = &ab;
   game.gameState = GameState_Menu;
   game.settings.menuIdx = 0;
   game.settings.menuTrigger = 0;
@@ -50,7 +47,7 @@ void setup()
 
 void loop() 
 {
-  if (!(ab.nextFrame()))
+  if (!(game.ab.nextFrame()))
     return;
 
    // Refresh state
@@ -71,6 +68,6 @@ void loop()
     break;
    }
 
-  if (ab.pressed(A_BUTTON) && ab.pressed(B_BUTTON))
+  if (game.ab.pressed(A_BUTTON) && game.ab.pressed(B_BUTTON))
     game.gameState = GameState_SplashScreen;
 }

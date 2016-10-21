@@ -19,9 +19,9 @@ typedef struct
 
 struct Game_t
 {
+  Arduboy       ab;
   Settings      settings;
   GameState     gameState;
-  Arduboy *     ab;
 };
 
 

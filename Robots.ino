@@ -1,6 +1,6 @@
 #include "Arduboy.h"
 #include "Robots.h"
-
+#include "Game.h"
 
 Game_t game;
 
@@ -43,6 +43,8 @@ void setup()
   game.settings.menuIdx = 0;
   game.settings.menuTrigger = 0;
   game.settings.sound = false;
+  game.settings.level = 1;
+  game.settings.score = 0;
 }
 
 void loop() 
@@ -60,7 +62,7 @@ void loop()
       ShowMenu(&game);
     break;
     case GameState_Playing:
-
+      PrintLevel(&game);
     break;
     break;
     case GameState_Infos:

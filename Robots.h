@@ -15,6 +15,9 @@ typedef struct
   int menuIdx;
   unsigned long menuTrigger;
   bool sound;
+
+  byte level;
+  int  score;
 } Settings;
 
 struct Game_t

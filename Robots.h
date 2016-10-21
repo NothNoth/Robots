@@ -1,6 +1,5 @@
 #ifndef ROBOTS_H_
 #define ROBOTS_H_
-#include "Arduboy.h"
 
 #define MENU_TRIGGER_DELAY 200
 typedef enum
@@ -11,46 +10,26 @@ typedef enum
   GameState_Playing
 } GameState;
 
-struct _Settings
+typedef struct
 {
   int menuIdx;
   unsigned long menuTrigger;
   bool sound;
-} settings;
+} Settings;
 
-
-Arduboy ab;
-//GameState gameState = GameState_SplashScreen;
-GameState gameState = GameState_Menu;
-
-
-PROGMEM unsigned const  char bitmap[] = { 
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA  };
-                   
-
-PROGMEM const unsigned char arrow[] =
+struct Game_t
 {
-  0x20,
-  0x10,
-  0xF8,
-  0x10,
-  0x20,
+  Settings      settings;
+  GameState     gameState;
+  Arduboy *     ab;
 };
 
-PROGMEM const unsigned char arrow2[] =
-{
-  0x20,
-  0x10,
-  0xF8,
-  0x10,
-  0x20,
-};
+
+void Splash(Game_t * game);
+void ShowMenu(Game_t * game);
+void ShowInfos(Game_t * game);
+void VerticalTransition(Game_t * game);
+
+
 
 #endif

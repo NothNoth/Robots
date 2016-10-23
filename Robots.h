@@ -39,7 +39,8 @@ typedef struct
   byte playerX;
   byte playerY;
   byte playerFrame;
-  Segment * levelMap;
+  Segment * map;
+  byte mapSize;
 } Level;
 
 struct Game_t

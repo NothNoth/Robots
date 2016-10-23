@@ -67,10 +67,12 @@ void SwitchLevel(Game_t * game, byte level)
   switch (level)
   {
     case 1:
-      game->level.levelMap = level1;
+      game->level.map = level1;
+      game->level.mapSize = sizeof(level1) / sizeof(Segment);
     break;
     default:
-      game->level.levelMap = level1;    
+      game->level.map = NULL;   
+      game->level.mapSize = 0;
   }
 }
 
@@ -92,9 +94,9 @@ void PrintPlayer(Game_t * game, bool moved)
     game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player3BMP, 6, 10, 1);
 }
 
-bool CollisionDetect(Game_t * game)
+bool CollisionDetectionPlayerMap(Game_t * game)
 {
-  
+  return false;
 }
 
 // Refresh level
@@ -127,13 +129,17 @@ void PrintLevel(Game_t * game)
     if (moved)
       game->settings.menuTrigger = millis();    
   }
-   
+
+  if (CollisionDetectionPlayerMap(game))
+  {
+    game->gameState = GameState_Menu; 
+    return;
+  }
   game->ab.clear();
   
   //Draw walls
-  byte count = sizeof(level1) / sizeof(Segment);
-  for (byte l = 0; l < count; l++)
-    game->ab.drawLine(level1[l].a.x, level1[l].a.y, level1[l].b.x, level1[l].b.y, 1);
+  for (byte l = 0; l < game->level.mapSize; l++)
+    game->ab.drawLine(game->level.map[l].a.x, game->level.map[l].a.y, game->level.map[l].b.x, game->level.map[l].b.y, 1);
 
   //Text
   game->ab.setTextSize(1);

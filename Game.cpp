@@ -106,10 +106,12 @@ void SwitchLevel(Game_t * game, byte level)
       
       game->level.robots = robots1;
       game->level.robotsCount = sizeof(robots1) / sizeof(Robot);
+      game->level.robotsMovement = 60;
     break;
     default:
       game->level.map = NULL;   
       game->level.mapSize = 0;
+      game->level.robotsMovement = 0;
   }
 }
 
@@ -166,17 +168,17 @@ void PrintLevel(Game_t * game)
       game->level.playerPosition.y--;
       moved = true;
     }
-    else if (game->ab.pressed(DOWN_BUTTON))
+    if (game->ab.pressed(DOWN_BUTTON))
     {
       game->level.playerPosition.y++;
       moved = true;
     }
-    else if (game->ab.pressed(LEFT_BUTTON))
+    if (game->ab.pressed(LEFT_BUTTON))
     {
       game->level.playerPosition.x--;
       moved = true;
     }
-    else if (game->ab.pressed(RIGHT_BUTTON))
+    if (game->ab.pressed(RIGHT_BUTTON))
     {
       game->level.playerPosition.x++;
       moved = true;
@@ -185,6 +187,21 @@ void PrintLevel(Game_t * game)
       game->settings.menuTrigger = millis();    
   }
 
+  for (byte r = 0; r < game->level.robotsCount; r++)
+  {
+    if (rand()%game->level.robotsMovement == 0)
+    {
+      if (game->level.robots[r].position.x < game->level.playerPosition.x)
+        game->level.robots[r].position.x++;
+      else
+        game->level.robots[r].position.x--;
+
+      if (game->level.robots[r].position.y < game->level.playerPosition.y)
+        game->level.robots[r].position.y++;
+      else
+        game->level.robots[r].position.y--;      
+    }
+  }
   if (CollisionDetectionPlayerMap(game))
   {
     game->gameState = GameState_Menu; 

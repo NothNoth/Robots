@@ -50,6 +50,7 @@ typedef struct
 
   Robot * robots;
   byte robotsCount;
+  byte robotsMovement; // rand()%robotMovement rate
 } Level;
 
 struct Game_t

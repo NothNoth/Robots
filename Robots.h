@@ -35,12 +35,21 @@ typedef struct
 
 typedef struct
 {
+  Point position;
+  byte state; // 0: dead, 1-3 frames  
+} Robot;
+
+typedef struct
+{
   byte currentLevel;
-  byte playerX;
-  byte playerY;
+  Point playerPosition;
   byte playerFrame;
+
   Segment * map;
   byte mapSize;
+
+  Robot * robots;
+  byte robotsCount;
 } Level;
 
 struct Game_t

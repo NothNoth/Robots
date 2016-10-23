@@ -14,10 +14,12 @@ Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
                      {{XLEFT, YBOTTOM}, {XRIGHT, YBOTTOM}}, //bottom wall
                      {{XLEFT, YTOP}, {XLEFT, YBOTTOM}}, //left wall
                      {{XRIGHT, YTOP}, {XRIGHT, 16}}, // right wall
-                     
                      {{XRIGHT, 28}, {XRIGHT, YBOTTOM}}, // right wall part 2
-                     
                      };
+
+Robot  robots1[] = {{{20, 20}, 1},
+                    {{30, 44}, 1}};
+                 
 char tmp[16];
 PROGMEM unsigned const  char player1BMP[] = { // 6 x 10
                    0b00110000,
@@ -61,14 +63,17 @@ PROGMEM unsigned const  char player3BMP[] = { // 6 x 10
 void SwitchLevel(Game_t * game, byte level)
 {
   game->level.currentLevel = level;
-  game->level.playerX = (XRIGHT - XLEFT)/2 + XLEFT; // center X
-  game->level.playerY = YBOTTOM - 10;
+  game->level.playerPosition.x = (XRIGHT - XLEFT)/2 + XLEFT; // center X
+  game->level.playerPosition.y = YBOTTOM - 10;
   game->level.playerFrame = 0;
   switch (level)
   {
     case 1:
       game->level.map = level1;
       game->level.mapSize = sizeof(level1) / sizeof(Segment);
+      
+      game->level.robots = robots1;
+      game->level.robotsCount = sizeof(robots1) / sizeof(Robot);
     break;
     default:
       game->level.map = NULL;   
@@ -87,11 +92,20 @@ void PrintPlayer(Game_t * game, bool moved)
   }
   
   if (game->level.playerFrame == 0)
-    game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player1BMP, 6, 10, 1);
+    game->ab.drawSlowXYBitmap(game->level.playerPosition.x, game->level.playerPosition.y, player1BMP, 6, 10, 1);
   else if (game->level.playerFrame == 1)
-    game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player2BMP, 6, 10, 1);
+    game->ab.drawSlowXYBitmap(game->level.playerPosition.x, game->level.playerPosition.y, player2BMP, 6, 10, 1);
   else
-    game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player3BMP, 6, 10, 1);
+    game->ab.drawSlowXYBitmap(game->level.playerPosition.x, game->level.playerPosition.y, player3BMP, 6, 10, 1);
+}
+
+void PrintRobots(Game_t * game)
+{
+  for (byte i = 0; i < game->level.robotsCount; i++)
+  {
+    if (game->level.robots[i].state != 0)
+      game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, player1BMP, 6, 10, 1);
+  }
 }
 
 bool CollisionDetectionPlayerMap(Game_t * game)
@@ -108,22 +122,22 @@ void PrintLevel(Game_t * game)
   {
     if (game->ab.pressed(UP_BUTTON))
     {
-      game->level.playerY--;
+      game->level.playerPosition.y--;
       moved = true;
     }
     else if (game->ab.pressed(DOWN_BUTTON))
     {
-      game->level.playerY++;
+      game->level.playerPosition.y++;
       moved = true;
     }
     else if (game->ab.pressed(LEFT_BUTTON))
     {
-      game->level.playerX--;
+      game->level.playerPosition.x--;
       moved = true;
     }
     else if (game->ab.pressed(RIGHT_BUTTON))
     {
-      game->level.playerX++;
+      game->level.playerPosition.x++;
       moved = true;
     }
     if (moved)
@@ -153,6 +167,9 @@ void PrintLevel(Game_t * game)
   // Player
   PrintPlayer(game, moved);
 
+  //Robots
+  PrintRobots(game);
+  
   game->ab.display();
 
     

@@ -24,7 +24,8 @@ typedef struct
 {
   byte currentLevel;
   byte playerX;
-  byte playerY;  
+  byte playerY;
+  byte playerFrame;
 } Level;
 
 struct Game_t

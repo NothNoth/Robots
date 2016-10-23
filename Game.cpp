@@ -29,60 +29,97 @@ Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
                      
                      };
 char tmp[16];
-PROGMEM unsigned const  char player[] = { 
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA  };
-
+PROGMEM unsigned const  char player1BMP[] = { // 6 x 10
+                   0b00110000,
+                   0b00110000,
+                   0b00000000,
+                   0b01111000,
+                   0b10110100,
+                   0b10110100,
+                   0b00110000,
+                   0b00110000,
+                   0b00110000,
+                   0b00111000
+                   };
+PROGMEM unsigned const  char player2BMP[] = { // 6 x 10
+                   0b00110000,
+                   0b00110000,
+                   0b00000000,
+                   0b01111000,
+                   0b10110100,
+                   0b10110100,
+                   0b00110000,
+                   0b00110000,
+                   0b01010000,
+                   0b01101000
+                   };
+PROGMEM unsigned const  char player3BMP[] = { // 6 x 10
+                   0b00110000,
+                   0b00110000,
+                   0b00000000,
+                   0b01111000,
+                   0b10110100,
+                   0b10110100,
+                   0b00110000,
+                   0b00110000,
+                   0b01010000,
+                   0b01101100
+                   };
+                   
 void SwitchLevel(Game_t * game, byte level)
 {
   game->level.currentLevel = level;
   game->level.playerX = (XRIGHT - XLEFT)/2 + XLEFT; // center X
   game->level.playerY = YBOTTOM - 10;
+  game->level.playerFrame = 0;
 }
 
-void PrintPlayer(Game_t * game)
+void PrintPlayer(Game_t * game, bool moved)
 {
-  // head
-  game->ab.drawPixel(game->level.playerX + 2, game->level.playerY, 1);
-  game->ab.drawPixel(game->level.playerX + 3, game->level.playerY, 1);
-  game->ab.drawPixel(game->level.playerX + 2, game->level.playerY + 1, 1);
-  game->ab.drawPixel(game->level.playerX + 3, game->level.playerY + 1, 1);
-
-  // shoulders
-  game->ab.drawLine(game->level.playerX + 1, game->level.playerY + 3, 
-                    game->level.playerX + 5, game->level.playerY + 3,
-                    1);
-
-  //left arm
-  game->ab.drawPixel(game->level.playerX, game->level.playerY + 4, 1);
-  game->ab.drawPixel(game->level.playerX, game->level.playerY + 5, 1);
+  if (moved)
+  {
+    game->level.playerFrame ++;
+    game->level.playerFrame = game->level.playerFrame%3;
+  }
   
-  //right arm
-  game->ab.drawPixel(game->level.playerX + 5, game->level.playerY + 4, 1);
-  game->ab.drawPixel(game->level.playerX + 5, game->level.playerY + 5, 1);
-
-  // Belly
-  game->ab.drawLine(game->level.playerX + 2, game->level.playerY + 4, 
-                    game->level.playerX + 2, game->level.playerY + 8,
-                    1);
-  game->ab.drawLine(game->level.playerX + 3, game->level.playerY + 4, 
-                    game->level.playerX + 3, game->level.playerY + 8,
-                    1);                      
-
-  // Feets
-  game->ab.drawLine(game->level.playerX + 2, game->level.playerY + 9, 
-                    game->level.playerX + 5, game->level.playerY + 9,
-                    1);          
+  if (game->level.playerFrame == 0)
+    game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player1BMP, 6, 10, 1);
+  else if (game->level.playerFrame == 1)
+    game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player2BMP, 6, 10, 1);
+  else
+    game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player3BMP, 6, 10, 1);
 }
 
 void PrintLevel(Game_t * game)
 {
+  bool moved = false;
+  // Controls
+  if (millis() - game->settings.menuTrigger > PLAYER_TRIGGER_DELAY)
+  {
+    if (game->ab.pressed(UP_BUTTON))
+    {
+      game->level.playerY--;
+      moved = true;
+    }
+    else if (game->ab.pressed(DOWN_BUTTON))
+    {
+      game->level.playerY++;
+      moved = true;
+    }
+    else if (game->ab.pressed(LEFT_BUTTON))
+    {
+      game->level.playerX--;
+      moved = true;
+    }
+    else if (game->ab.pressed(RIGHT_BUTTON))
+    {
+      game->level.playerX++;
+      moved = true;
+    }
+    if (moved)
+      game->settings.menuTrigger = millis();    
+  }
+   
   game->ab.clear();
   
   //Draw walls
@@ -100,34 +137,10 @@ void PrintLevel(Game_t * game)
   game->ab.print(tmp);
 
   // Player
-  PrintPlayer(game);
+  PrintPlayer(game, moved);
 
   game->ab.display();
 
-  // Controls
-  if (millis() - game->settings.menuTrigger > PLAYER_TRIGGER_DELAY)
-  {
-    if (game->ab.pressed(UP_BUTTON))
-    {
-      game->level.playerY--;
-      game->settings.menuTrigger = millis();
-    }
-    else if (game->ab.pressed(DOWN_BUTTON))
-    {
-      game->level.playerY++;
-      game->settings.menuTrigger = millis();
-    }
-    else if (game->ab.pressed(LEFT_BUTTON))
-    {
-      game->level.playerX--;
-      game->settings.menuTrigger = millis();
-    }
-        else if (game->ab.pressed(RIGHT_BUTTON))
-    {
-      game->level.playerX++;
-      game->settings.menuTrigger = millis();
-    }
-   }
     
 }
 

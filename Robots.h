@@ -20,11 +20,19 @@ typedef struct
   int  score;
 } Settings;
 
+typedef struct
+{
+  byte currentLevel;
+  byte playerX;
+  byte playerY;  
+} Level;
+
 struct Game_t
 {
   Arduboy       ab;
   Settings      settings;
   GameState     gameState;
+  Level         level;
 };
 
 

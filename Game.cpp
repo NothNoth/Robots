@@ -7,7 +7,7 @@
 #define XLEFT 8
 #define XRIGHT 120
 #define YTOP 0
-#define YBOTTOM 50
+#define YBOTTOM 52
 #define PLAYER_TRIGGER_DELAY 20
 
 Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
@@ -59,6 +59,38 @@ PROGMEM unsigned const  char player3BMP[] = { // 6 x 10
                    };
 
 
+PROGMEM unsigned const char robot1BMP[] = { // 8 x 8
+  0b00111100,
+  0b01100110,
+  0b11111111,
+  0b10111101,
+  0b10111101,
+  0b00100100,
+  0b00100100,
+  0b01100110
+};
+
+PROGMEM unsigned const char robot2BMP[] = { // 8 x 8
+  0b00111100,
+  0b01110110,
+  0b11111111,
+  0b10111101,
+  0b10111101,
+  0b00100100,
+  0b00100100,
+  0b01100110
+};
+
+PROGMEM unsigned const char robot3BMP[] = { // 8 x 8
+  0b00111100,
+  0b01111110,
+  0b11111111,
+  0b10111101,
+  0b10111101,
+  0b00100100,
+  0b00100100,
+  0b01100110
+};
 /// Reset level struct to defaults
 void SwitchLevel(Game_t * game, byte level)
 {
@@ -104,7 +136,16 @@ void PrintRobots(Game_t * game)
   for (byte i = 0; i < game->level.robotsCount; i++)
   {
     if (game->level.robots[i].state != 0)
-      game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, player1BMP, 6, 10, 1);
+    {
+      if (game->level.robots[i].state == 1)
+        game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, robot1BMP, 8, 8, 1);
+      else if (game->level.robots[i].state == 1)
+        game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, robot2BMP, 8, 8, 1);
+      else
+        game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, robot3BMP, 8, 8, 1);
+      game->level.robots[i].state ++;
+      game->level.robots[i].state = game->level.robots[i].state%3 + 1;
+    }
   }
 }
 

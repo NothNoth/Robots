@@ -1,6 +1,6 @@
 #include "Arduboy.h"
 #include "Robots.h"
-
+#include "Utils.h"
 
 void ShowInfos(Game_t * game)
 {
@@ -33,7 +33,6 @@ void ShowMenu(Game_t * game)
   game->ab.setCursor(10, 5);
   game->ab.setTextSize(2);
   game->ab.print("ROBOTS");
-  
   game->ab.setTextSize(1);
 
   y = 15;

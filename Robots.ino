@@ -45,6 +45,7 @@ void setup()
   game.settings.sound = false;
   game.settings.level = 1;
   game.settings.score = 0;
+  SwitchLevel(&game, 1);
 }
 
 void loop() 

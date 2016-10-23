@@ -2,17 +2,7 @@
 #include "Robots.h"
 #include "Game.h"
 
-typedef struct
-{
-  byte x;
-  byte y;  
-} Point;
 
-typedef struct
-{
-  Point a;
-  Point b;
-} Segment;
 
 #define XLEFT 8
 #define XRIGHT 120
@@ -65,15 +55,27 @@ PROGMEM unsigned const  char player3BMP[] = { // 6 x 10
                    0b01010000,
                    0b01101100
                    };
-                   
+
+
+/// Reset level struct to defaults
 void SwitchLevel(Game_t * game, byte level)
 {
   game->level.currentLevel = level;
   game->level.playerX = (XRIGHT - XLEFT)/2 + XLEFT; // center X
   game->level.playerY = YBOTTOM - 10;
   game->level.playerFrame = 0;
+  switch (level)
+  {
+    case 1:
+      game->level.levelMap = level1;
+    break;
+    default:
+      game->level.levelMap = level1;    
+  }
 }
 
+
+// Print player character bitmap
 void PrintPlayer(Game_t * game, bool moved)
 {
   if (moved)
@@ -90,6 +92,12 @@ void PrintPlayer(Game_t * game, bool moved)
     game->ab.drawSlowXYBitmap(game->level.playerX, game->level.playerY, player3BMP, 6, 10, 1);
 }
 
+bool CollisionDetect(Game_t * game)
+{
+  
+}
+
+// Refresh level
 void PrintLevel(Game_t * game)
 {
   bool moved = false;

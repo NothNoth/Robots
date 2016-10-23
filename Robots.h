@@ -2,6 +2,19 @@
 #define ROBOTS_H_
 
 #define MENU_TRIGGER_DELAY 200
+
+typedef struct
+{
+  byte x;
+  byte y;  
+} Point;
+
+typedef struct
+{
+  Point a;
+  Point b;
+} Segment;
+
 typedef enum
 {
   GameState_SplashScreen,
@@ -26,6 +39,7 @@ typedef struct
   byte playerX;
   byte playerY;
   byte playerFrame;
+  Segment * levelMap;
 } Level;
 
 struct Game_t

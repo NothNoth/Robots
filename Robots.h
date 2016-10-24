@@ -39,6 +39,13 @@ typedef struct
   byte state; // 0: dead, 1-3 frames  
 } Robot;
 
+
+typedef struct
+{
+  Point position;
+  Point direction;  
+} Bullet;
+
 typedef struct
 {
   byte currentLevel;
@@ -51,15 +58,16 @@ typedef struct
   Robot * robots;
   byte robotsCount;
   byte robotsMovement; // rand()%robotMovement rate
+  Bullet bullets[8];
 } Level;
 
-struct Game_t
+typedef struct
 {
   Arduboy       ab;
   Settings      settings;
   GameState     gameState;
   Level         level;
-};
+} Game_t;
 
 
 void Splash(Game_t * game);

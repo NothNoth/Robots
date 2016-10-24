@@ -113,6 +113,13 @@ void SwitchLevel(Game_t * game, byte level)
       game->level.mapSize = 0;
       game->level.robotsMovement = 0;
   }
+  memset(game->level.bullets, 0x00, sizeof(Bullet) * 16);
+
+  game->level.bullets[0].position.x = 1;
+  game->level.bullets[0].position.y = 1;
+  game->level.bullets[0].direction.x = 1;
+  game->level.bullets[0].direction.y = 1;
+  
 }
 
 
@@ -156,10 +163,37 @@ bool CollisionDetectionPlayerMap(Game_t * game)
   return false;
 }
 
+void UpdateBullets(Game_t * game)
+{
+  for (byte b = 0; b < 16; b++)
+  {
+    if (game->level.bullets[b].direction.x || game->level.bullets[b].direction.y)
+    {
+      game->level.bullets[b].position.x += game->level.bullets[b].direction.x;
+      game->level.bullets[b].position.y += game->level.bullets[b].direction.y;
+
+      if ((game->level.bullets[b].position.x >= XRIGHT) ||
+          (game->level.bullets[b].position.x <= XLEFT) ||
+          (game->level.bullets[b].position.y >= YBOTTOM) ||
+          (game->level.bullets[b].position.y <= YTOP))
+      {
+            memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
+      }
+      else
+      {
+        game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
+                          game->level.bullets[b].position.x + game->level.bullets[b].direction.x, game->level.bullets[b].position.y + game->level.bullets[b].direction.y, 
+                          1);
+      }
+    }
+  }
+}
+
 // Refresh level
 void PrintLevel(Game_t * game)
 {
   bool moved = false;
+  
   // Controls
   if (millis() - game->settings.menuTrigger > PLAYER_TRIGGER_DELAY)
   {
@@ -187,6 +221,7 @@ void PrintLevel(Game_t * game)
       game->settings.menuTrigger = millis();    
   }
 
+  // Move robots
   for (byte r = 0; r < game->level.robotsCount; r++)
   {
     if (rand()%game->level.robotsMovement == 0)
@@ -202,6 +237,8 @@ void PrintLevel(Game_t * game)
         game->level.robots[r].position.y--;      
     }
   }
+  
+  //Detect collisions
   if (CollisionDetectionPlayerMap(game))
   {
     game->gameState = GameState_Menu; 
@@ -227,6 +264,9 @@ void PrintLevel(Game_t * game)
 
   //Robots
   PrintRobots(game);
+
+    //Bullets
+  UpdateBullets(game);
   
   game->ab.display();
 

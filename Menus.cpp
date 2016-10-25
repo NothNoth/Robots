@@ -1,6 +1,7 @@
 #include "Arduboy.h"
 #include "Robots.h"
 #include "Utils.h"
+#include "Sound.h"
 
 void ShowInfos(Game_t * game)
 {
@@ -50,9 +51,15 @@ void ShowMenu(Game_t * game)
   y += 10;
   game->ab.setCursor(20, y);
   if (game->settings.sound)
+  {
     game->ab.print("Sound on");
+    StartMusic(game);
+  }
   else
+  {
     game->ab.print("Sound off");
+    StopMusic(game);
+  }
   if (game->settings.menuIdx == 1)
     game->ab.fillRect(14, y+2, 4, 4, 0xCC);
     

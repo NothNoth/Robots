@@ -11,6 +11,12 @@ typedef struct
 
 typedef struct
 {
+  float x;
+  float y;  
+} Pointf;
+
+typedef struct
+{
   Point a;
   Point b;
 } Segment;
@@ -43,7 +49,9 @@ typedef struct
 typedef struct
 {
   Point position;
-  Point direction;  
+  Point direction;
+  byte speedIdx; //current iteration
+  byte speed; //update position evey speed iterations
 } Bullet;
 
 typedef struct

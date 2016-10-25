@@ -3,7 +3,6 @@
 #include "Game.h"
 
 
-
 #define XLEFT 8
 #define XRIGHT 120
 #define YTOP 0
@@ -115,11 +114,12 @@ void SwitchLevel(Game_t * game, byte level)
   }
   memset(game->level.bullets, 0x00, sizeof(Bullet) * 16);
 
-  game->level.bullets[0].position.x = 1;
-  game->level.bullets[0].position.y = 1;
+  game->level.bullets[0].position.x = XLEFT + 1;
+  game->level.bullets[0].position.y = YTOP + 1;
   game->level.bullets[0].direction.x = 1;
   game->level.bullets[0].direction.y = 1;
-  
+  game->level.bullets[0].speed = 2;
+  game->level.bullets[0].speedIdx = 0;
 }
 
 
@@ -169,8 +169,14 @@ void UpdateBullets(Game_t * game)
   {
     if (game->level.bullets[b].direction.x || game->level.bullets[b].direction.y)
     {
-      game->level.bullets[b].position.x += game->level.bullets[b].direction.x;
-      game->level.bullets[b].position.y += game->level.bullets[b].direction.y;
+      game->level.bullets[b].speedIdx++;
+      //Time to update bullet position ?
+      if (game->level.bullets[b].speedIdx == game->level.bullets[b].speed)
+      {
+        game->level.bullets[b].position.x += game->level.bullets[b].direction.x;
+        game->level.bullets[b].position.y += game->level.bullets[b].direction.y;
+        game->level.bullets[b].speedIdx = 0;
+      }
 
       if ((game->level.bullets[b].position.x >= XRIGHT) ||
           (game->level.bullets[b].position.x <= XLEFT) ||
@@ -181,9 +187,9 @@ void UpdateBullets(Game_t * game)
       }
       else
       {
-        game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
-                          game->level.bullets[b].position.x + game->level.bullets[b].direction.x, game->level.bullets[b].position.y + game->level.bullets[b].direction.y, 
-                          1);
+          game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
+                            game->level.bullets[b].position.x + game->level.bullets[b].direction.x + 2, game->level.bullets[b].position.y + game->level.bullets[b].direction.y + 2, 
+                            1);
       }
     }
   }
@@ -269,7 +275,5 @@ void PrintLevel(Game_t * game)
   UpdateBullets(game);
   
   game->ab.display();
-
-    
 }
 

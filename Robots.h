@@ -2,6 +2,7 @@
 #define ROBOTS_H_
 
 #define MENU_TRIGGER_DELAY 200
+#define MAX_BULLETS 8
 
 typedef struct
 {
@@ -66,7 +67,7 @@ typedef struct
   Robot * robots;
   byte robotsCount;
   byte robotsMovement; // rand()%robotMovement rate
-  Bullet bullets[8];
+  Bullet bullets[MAX_BULLETS];
 } Level;
 
 typedef struct

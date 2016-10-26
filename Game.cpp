@@ -8,7 +8,6 @@
 #define YTOP 0
 #define YBOTTOM 52
 #define PLAYER_TRIGGER_DELAY 20
-#define MAX_BULLETS 16
 Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
                      {{XLEFT, YBOTTOM}, {XRIGHT, YBOTTOM}}, //bottom wall
                      {{XLEFT, YTOP}, {XLEFT, YBOTTOM}}, //left wall
@@ -173,7 +172,7 @@ void UpdateBullets(Game_t * game)
     {
       game->level.bullets[b].speedIdx++;
       //Time to update bullet position ?
-      if (game->level.bullets[b].speedIdx == game->level.bullets[b].speed)
+      if (game->level.bullets[b].speed && (game->level.bullets[b].speedIdx == game->level.bullets[b].speed))
       {
         game->level.bullets[b].position.x += game->level.bullets[b].direction.x;
         game->level.bullets[b].position.y += game->level.bullets[b].direction.y;
@@ -186,6 +185,8 @@ void UpdateBullets(Game_t * game)
           (game->level.bullets[b].position.y <= YTOP))
       {
         memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
+        game->level.bullets[b].direction.x = 0;
+        game->level.bullets[b].direction.y = 0;
       }
       else
       {
@@ -249,25 +250,39 @@ void PrintLevel(Game_t * game)
     {
       for (int b = 0; b < MAX_BULLETS; b++)
       {
+      
         //free firing slot
         if (!game->level.bullets[b].direction.x && !game->level.bullets[b].direction.y)
         {
           game->level.bullets[b].position.x = game->level.robots[r].position.x;
           game->level.bullets[b].position.y = game->level.robots[r].position.y;
-          
-          if (game->level.playerPosition.x == game->level.robots[r].position.x)
-            game->level.bullets[b].direction.x = 0;
-          else if (game->level.playerPosition.x < game->level.robots[r].position.x)
-            game->level.bullets[b].direction.x = -1;
-          else
+
+          game->level.bullets[b].direction.x = 0;
+          game->level.bullets[b].direction.y = 0;
+          char xdist = game->level.playerPosition.x - game->level.robots[r].position.x;
+          char ydist = game->level.playerPosition.y - game->level.robots[r].position.y;
+
+          game->level.bullets[b].direction.x = 0;
+          game->level.bullets[b].direction.y = 0;
+          if ((xdist > 0) && (abs(xdist) > abs(2*ydist))) // really on the right side
             game->level.bullets[b].direction.x = 1;
-            
-          if (game->level.playerPosition.y == game->level.robots[r].position.y)
-            game->level.bullets[b].direction.y = 0;
-          else if (game->level.playerPosition.y < game->level.robots[r].position.y)
+          else if ((xdist < 0) && (abs(xdist) > abs(2*ydist))) // really on the left side
+            game->level.bullets[b].direction.x = -1;
+          else if ((ydist > 0) && (abs(ydist) > abs(2*xdist))) // really on the bottom side
+            game->level.bullets[b].direction.y = 1;
+          else if ((ydist < 0) && (abs(ydist) > abs(2*xdist))) // really on the top side
             game->level.bullets[b].direction.y = -1;
           else
-            game->level.bullets[b].direction.y = 1;
+          {                                                     //diag shots
+            if (xdist > 0)
+              game->level.bullets[b].direction.x = 1;
+             else
+              game->level.bullets[b].direction.x = -1;
+             if (ydist > 0)
+              game->level.bullets[b].direction.y = 1;
+             else
+              game->level.bullets[b].direction.y = -1;
+          }
            
           game->level.bullets[b].speed = 3;
           game->level.bullets[b].speedIdx = 0;

@@ -8,7 +8,7 @@
 #define YTOP 0
 #define YBOTTOM 52
 #define PLAYER_TRIGGER_DELAY 20
-
+#define MAX_BULLETS 16
 Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
                      {{XLEFT, YBOTTOM}, {XRIGHT, YBOTTOM}}, //bottom wall
                      {{XLEFT, YTOP}, {XLEFT, YBOTTOM}}, //left wall
@@ -112,14 +112,16 @@ void SwitchLevel(Game_t * game, byte level)
       game->level.mapSize = 0;
       game->level.robotsMovement = 0;
   }
-  memset(game->level.bullets, 0x00, sizeof(Bullet) * 16);
+  memset(game->level.bullets, 0x00, sizeof(Bullet) * MAX_BULLETS);
 
+/*
   game->level.bullets[0].position.x = XLEFT + 1;
   game->level.bullets[0].position.y = YTOP + 1;
   game->level.bullets[0].direction.x = 1;
   game->level.bullets[0].direction.y = 1;
   game->level.bullets[0].speed = 2;
   game->level.bullets[0].speedIdx = 0;
+*/
 }
 
 
@@ -165,7 +167,7 @@ bool CollisionDetectionPlayerMap(Game_t * game)
 
 void UpdateBullets(Game_t * game)
 {
-  for (byte b = 0; b < 16; b++)
+  for (byte b = 0; b < MAX_BULLETS; b++)
   {
     if (game->level.bullets[b].direction.x || game->level.bullets[b].direction.y)
     {
@@ -183,13 +185,13 @@ void UpdateBullets(Game_t * game)
           (game->level.bullets[b].position.y >= YBOTTOM) ||
           (game->level.bullets[b].position.y <= YTOP))
       {
-            memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
+        memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
       }
       else
       {
-          game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
-                            game->level.bullets[b].position.x + game->level.bullets[b].direction.x + 2, game->level.bullets[b].position.y + game->level.bullets[b].direction.y + 2, 
-                            1);
+        game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
+                          game->level.bullets[b].position.x + 2*game->level.bullets[b].direction.x, game->level.bullets[b].position.y + 2*game->level.bullets[b].direction.y, 
+                          1);
       }
     }
   }
@@ -241,6 +243,37 @@ void PrintLevel(Game_t * game)
         game->level.robots[r].position.y++;
       else
         game->level.robots[r].position.y--;      
+    }
+
+    if (rand()%10 == 0)
+    {
+      for (int b = 0; b < MAX_BULLETS; b++)
+      {
+        //free firing slot
+        if (!game->level.bullets[b].direction.x && !game->level.bullets[b].direction.y)
+        {
+          game->level.bullets[b].position.x = game->level.robots[r].position.x;
+          game->level.bullets[b].position.y = game->level.robots[r].position.y;
+          
+          if (game->level.playerPosition.x == game->level.robots[r].position.x)
+            game->level.bullets[b].direction.x = 0;
+          else if (game->level.playerPosition.x < game->level.robots[r].position.x)
+            game->level.bullets[b].direction.x = -1;
+          else
+            game->level.bullets[b].direction.x = 1;
+            
+          if (game->level.playerPosition.y == game->level.robots[r].position.y)
+            game->level.bullets[b].direction.y = 0;
+          else if (game->level.playerPosition.y < game->level.robots[r].position.y)
+            game->level.bullets[b].direction.y = -1;
+          else
+            game->level.bullets[b].direction.y = 1;
+           
+          game->level.bullets[b].speed = 3;
+          game->level.bullets[b].speedIdx = 0;
+          break;
+        }
+      }
     }
   }
   

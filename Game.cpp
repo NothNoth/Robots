@@ -39,7 +39,7 @@ void SwitchLevel(Game_t * game, byte level)
       
       game->level.robots = robots1;
       game->level.robotsCount = sizeof(robots1) / sizeof(Robot);
-      game->level.robotsMovement = 60;
+      game->level.robotsMovement = 180;
     break;
     default:
       game->level.map = NULL;   
@@ -57,34 +57,34 @@ void UpdateBullets(Game_t * game)
 {
   for (byte b = 0; b < MAX_BULLETS; b++)
   {
-    if (game->level.bullets[b].direction.x || game->level.bullets[b].direction.y)
+    if (!game->level.bullets[b].direction.x || !game->level.bullets[b].direction.y)
+      continue;
+  
+    game->level.bullets[b].speedIdx+= game->level.bullets[b].speed;
+    //Time to update bullet position ?
+    if (game->level.bullets[b].speed && (game->level.bullets[b].speedIdx == game->level.bullets[b].speed))
     {
-      game->level.bullets[b].speedIdx++;
-      //Time to update bullet position ?
-      if (game->level.bullets[b].speed && (game->level.bullets[b].speedIdx == game->level.bullets[b].speed))
-      {
-        game->level.bullets[b].position.x += game->level.bullets[b].direction.x;
-        game->level.bullets[b].position.y += game->level.bullets[b].direction.y;
-        game->level.bullets[b].speedIdx = 0;
-      }
-
-      if ((game->level.bullets[b].position.x >= XRIGHT) ||
-          (game->level.bullets[b].position.x <= XLEFT) ||
-          (game->level.bullets[b].position.y >= YBOTTOM) ||
-          (game->level.bullets[b].position.y <= YTOP))
-      {
-        memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
-        game->level.bullets[b].direction.x = 0;
-        game->level.bullets[b].direction.y = 0;
-      }
-      else
-      {
-        game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
-                          game->level.bullets[b].position.x + 2*game->level.bullets[b].direction.x, game->level.bullets[b].position.y + 2*game->level.bullets[b].direction.y, 
-                          1);
-      }
-      CollisionsAdd(game, game->level.bullets[b].position.x, game->level.bullets[b].position.y, 1, 1, NULL, NULL);
+      game->level.bullets[b].position.x += game->level.bullets[b].direction.x;
+      game->level.bullets[b].position.y += game->level.bullets[b].direction.y;
+      game->level.bullets[b].speedIdx = 0;
     }
+
+    if ((game->level.bullets[b].position.x >= XRIGHT) ||
+        (game->level.bullets[b].position.x <= XLEFT) ||
+        (game->level.bullets[b].position.y >= YBOTTOM) ||
+        (game->level.bullets[b].position.y <= YTOP))
+    {
+      memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
+      game->level.bullets[b].direction.x = 0;
+      game->level.bullets[b].direction.y = 0;
+    }
+    else
+    {
+      game->ab.drawLine(game->level.bullets[b].position.x, game->level.bullets[b].position.y,
+                        game->level.bullets[b].position.x + 2*game->level.bullets[b].direction.x, game->level.bullets[b].position.y + 2*game->level.bullets[b].direction.y, 
+                        1);
+    }
+    CollisionsAdd(game, game->level.bullets[b].position.x, game->level.bullets[b].position.y, 1, 1, NULL, NULL);
   }
 }
 

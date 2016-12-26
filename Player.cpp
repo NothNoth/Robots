@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "Collisions.h"
 
-#define PLAYER_TRIGGER_DELAY 20
+#define PLAYER_TRIGGER_DELAY 10
 
 
 PROGMEM unsigned const  char player1BMP[] = { // 6 x 10

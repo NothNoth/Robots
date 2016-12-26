@@ -55,7 +55,7 @@ void RobotDead(Game_t * game, void * userData)
 
 void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
 {
-  if (rand()%150 != 0)
+  if (rand()%50 != 0)
     return;
 
   for (int b = 0; b < MAX_BULLETS; b++)

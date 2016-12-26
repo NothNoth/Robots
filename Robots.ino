@@ -7,7 +7,7 @@ Game_t game;
 void setup() 
 {
   game.ab.beginNoLogo();
-  game.ab.setFrameRate(30);
+  game.ab.setFrameRate(10);
 
   game.gameState = GameState_Menu;
   game.settings.menuIdx = 0;

@@ -3,7 +3,7 @@
 #include "Robots.h"
 
 void SwitchLevel(Game_t * game, byte level);
-void PrintLevel(Game_t * game);
+void GameLoop(Game_t * game);
 
 
 #endif

@@ -96,7 +96,8 @@ bool UpdatePlayer(Game_t * game)
 
 void PlayerDead(Game_t * game, void * userData)
 {
-  game->gameState = GameState_Menu; 
+  SwitchLevel(game, 1);
+  //game->gameState = GameState_Menu; 
 }
 
 

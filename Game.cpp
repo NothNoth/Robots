@@ -3,6 +3,7 @@
 #include "Game.h"
 #include "Collisions.h"
 #include "Player.h"
+#include "NPC.h"
 
 #define XLEFT 8
 #define XRIGHT 120
@@ -21,40 +22,7 @@ Robot  robots1[] = {{{20, 20}, 1},
 char tmp[16];
 
 
-PROGMEM unsigned const char robot1BMP[] = { // 8 x 8
-  0b00111100,
-  0b01100110,
-  0b11111111,
-  0b10111101,
-  0b10111101,
-  0b00100100,
-  0b00100100,
-  0b01100110
-};
 
-PROGMEM unsigned const char robot2BMP[] = { // 8 x 8
-  0b00111100,
-  0b01110110,
-  0b11111111,
-  0b10111101,
-  0b10111101,
-  0b00100100,
-  0b00100100,
-  0b01100110
-};
-
-PROGMEM unsigned const char robot3BMP[] = { // 8 x 8
-  0b00111100,
-  0b01111110,
-  0b11111111,
-  0b10111101,
-  0b10111101,
-  0b00100100,
-  0b00100100,
-  0b01100110
-};
-
-void RobotDead(Game_t * game, void * userData);
 
 /// Reset level struct to defaults
 void SwitchLevel(Game_t * game, byte level)
@@ -79,36 +47,10 @@ void SwitchLevel(Game_t * game, byte level)
       game->level.robotsMovement = 0;
   }
   memset(game->level.bullets, 0x00, sizeof(Bullet) * MAX_BULLETS);
-
-/*
-  game->level.bullets[0].position.x = XLEFT + 1;
-  game->level.bullets[0].position.y = YTOP + 1;
-  game->level.bullets[0].direction.x = 1;
-  game->level.bullets[0].direction.y = 1;
-  game->level.bullets[0].speed = 2;
-  game->level.bullets[0].speedIdx = 0;
-*/
 }
 
 
 
-void PrintRobots(Game_t * game)
-{
-  for (byte i = 0; i < game->level.robotsCount; i++)
-  {
-    if (game->level.robots[i].state != 0)
-    {
-      if (game->level.robots[i].state == 1)
-        game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, robot1BMP, 8, 8, 1);
-      else if (game->level.robots[i].state == 1)
-        game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, robot2BMP, 8, 8, 1);
-      else
-        game->ab.drawSlowXYBitmap(game->level.robots[i].position.x, game->level.robots[i].position.y, robot3BMP, 8, 8, 1);
-      game->level.robots[i].state ++;
-      game->level.robots[i].state = game->level.robots[i].state%3 + 1;
-    }
-  }
-}
 
 
 void UpdateBullets(Game_t * game)
@@ -145,95 +87,21 @@ void UpdateBullets(Game_t * game)
   }
 }
 
-void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
+void PrintBottomLine(Game_t * game)
 {
-  if (rand()%150 != 0)
-    return;
-
-  for (int b = 0; b < MAX_BULLETS; b++)
-  {        
-    //free firing slot
-    if (!bullets[b].direction.x && !bullets[b].direction.y)
-    {
-      bullets[b].position.x = startX;
-      bullets[b].position.y = startY;
-
-      bullets[b].direction.x = 0;
-      bullets[b].direction.y = 0;
-      char xdist = playerX - startX;
-      char ydist = playerY - startY;
-
-      bullets[b].direction.x = 0;
-      bullets[b].direction.y = 0;
-      if ((xdist > 0) && (abs(xdist) > abs(2*ydist))) // really on the right side
-        bullets[b].direction.x = 1;
-      else if ((xdist < 0) && (abs(xdist) > abs(2*ydist))) // really on the left side
-        bullets[b].direction.x = -1;
-      else if ((ydist > 0) && (abs(ydist) > abs(2*xdist))) // really on the bottom side
-        bullets[b].direction.y = 1;
-      else if ((ydist < 0) && (abs(ydist) > abs(2*xdist))) // really on the top side
-        bullets[b].direction.y = -1;
-      else
-      {                                                     //diag shots
-        if (xdist > 0)
-          bullets[b].direction.x = 1;
-         else
-          bullets[b].direction.x = -1;
-         if (ydist > 0)
-          bullets[b].direction.y = 1;
-         else
-          bullets[b].direction.y = -1;
-      }
-       
-      bullets[b].speed = 3;
-      bullets[b].speedIdx = 0;
-      return;
-    }
-  }
+  //Text
+  game->ab.setTextSize(1);
+  game->ab.setCursor(12, 56);
+  sprintf(tmp, "Lvl %d", game->settings.level);
+  game->ab.print(tmp);
+  game->ab.print("  ");
+  sprintf(tmp, "Score %d", game->settings.score);
+  game->ab.print(tmp);  
 }
 
-// Refresh level
 void PrintLevel(Game_t * game)
 {
 
-  CollisionsClear();
-  bool playerMoved = UpdatePlayer(game);
-
-  
-  // Move robots
-  for (byte r = 0; r < game->level.robotsCount; r++)
-  {
-    //Ignore dead robots
-    if (game->level.robots[r].state == 0)
-      continue;
-
-    //Move robot
-    if (rand()%game->level.robotsMovement == 0)
-    {
-      if (game->level.robots[r].position.x < game->level.playerPosition.x)
-        game->level.robots[r].position.x++;
-      else
-        game->level.robots[r].position.x--;
-
-      if (game->level.robots[r].position.y < game->level.playerPosition.y)
-        game->level.robots[r].position.y++;
-      else
-        game->level.robots[r].position.y--;      
-    }
-
-    //Detect collisions
-    if (CollisionsAdd(game, game->level.robots[r].position.x, game->level.robots[r].position.y, 8, 8, RobotDead, (void *)&game->level.robots[r]))
-    {
-      continue;
-    }
-
-    //Eventually shoot
-    SpawnRobotBullet(game->level.bullets, game->level.robots[r].position.x, game->level.robots[r].position.y, game->level.playerPosition.x, game->level.playerPosition.y);
-  }
-
-
-  game->ab.clear();
-  
   //Draw walls
   for (byte l = 0; l < game->level.mapSize; l++)
   {
@@ -256,49 +124,30 @@ void PrintLevel(Game_t * game)
       h = 1;
       w = abs(game->level.map[l].a.x - game->level.map[l].b.x);
     }
-    if (CollisionsAdd(game, x, y, w, h, NULL, NULL))
-    {
-      //game->gameState = GameState_Menu; 
-
-    }
+    
+    CollisionsAdd(game, x, y, w, h, NULL, NULL);
   }
+}
+
+// Refresh level
+void GameLoop(Game_t * game)
+{
+  CollisionsClear();
+  game->ab.clear();
   
-  //Text
-  game->ab.setTextSize(1);
-  game->ab.setCursor(12, 56);
-  sprintf(tmp, "Lvl %d", game->settings.level);
-  game->ab.print(tmp);
-  game->ab.print("  ");
-  sprintf(tmp, "Score %d", game->settings.score);
-  game->ab.print(tmp);
-
-  // Player
-  PrintPlayer(game, playerMoved);
-
-  //Robots
-  PrintRobots(game);
-
-  //Bullets
+  bool playerMoved = UpdatePlayer(game);
+  UpdateNPCs(game);
   UpdateBullets(game);
+
+  PrintLevel(game);
+  PrintBottomLine(game);
+  PrintPlayer(game, playerMoved);
+  PrintNPCs(game);
+
+
   
   game->ab.display();
 }
 
 
 
-void RobotDead(Game_t * game, void * userData)
-{
-  Robot * r = (Robot *) userData;
-  r->state = 0;
-  game->settings.score += 10;
-  
-  for (byte r = 0; r < game->level.robotsCount; r++)
-  {
-    if (game->level.robots[r].state != 0)
-      return;
-  }
-
-  //All robots dead!
-  game->gameState = GameState_Menu; 
-
-}

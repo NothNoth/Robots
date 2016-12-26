@@ -33,7 +33,7 @@ void loop()
       ShowMenu(&game);
     break;
     case GameState_Playing:
-      PrintLevel(&game);
+      GameLoop(&game);
     break;
     break;
     case GameState_Infos:

@@ -1,5 +1,6 @@
 #ifndef ROBOTS_H_
 #define ROBOTS_H_
+#include "Arduboy.h"
 
 #define MENU_TRIGGER_DELAY 200
 #define MAX_BULLETS 8

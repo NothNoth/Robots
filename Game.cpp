@@ -2,12 +2,12 @@
 #include "Robots.h"
 #include "Game.h"
 #include "Collisions.h"
+#include "Player.h"
 
 #define XLEFT 8
 #define XRIGHT 120
 #define YTOP 0
 #define YBOTTOM 52
-#define PLAYER_TRIGGER_DELAY 20
 Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
                      {{XLEFT, YBOTTOM}, {XRIGHT, YBOTTOM}}, //bottom wall
                      {{XLEFT, YTOP}, {XLEFT, YBOTTOM}}, //left wall
@@ -19,42 +19,6 @@ Robot  robots1[] = {{{20, 20}, 1},
                     {{30, 44}, 1}};
                  
 char tmp[16];
-PROGMEM unsigned const  char player1BMP[] = { // 6 x 10
-                   0b00110000,
-                   0b00110000,
-                   0b00000000,
-                   0b01111000,
-                   0b10110100,
-                   0b10110100,
-                   0b00110000,
-                   0b00110000,
-                   0b00110000,
-                   0b00111000
-                   };
-PROGMEM unsigned const  char player2BMP[] = { // 6 x 10
-                   0b00110000,
-                   0b00110000,
-                   0b00000000,
-                   0b01111000,
-                   0b10110100,
-                   0b10110100,
-                   0b00110000,
-                   0b00110000,
-                   0b01010000,
-                   0b01101000
-                   };
-PROGMEM unsigned const  char player3BMP[] = { // 6 x 10
-                   0b00110000,
-                   0b00110000,
-                   0b00000000,
-                   0b01111000,
-                   0b10110100,
-                   0b10110100,
-                   0b00110000,
-                   0b00110000,
-                   0b01010000,
-                   0b01101100
-                   };
 
 
 PROGMEM unsigned const char robot1BMP[] = { // 8 x 8
@@ -90,7 +54,6 @@ PROGMEM unsigned const char robot3BMP[] = { // 8 x 8
   0b01100110
 };
 
-void PlayerDead(Game_t * game, void * userData);
 void RobotDead(Game_t * game, void * userData);
 
 /// Reset level struct to defaults
@@ -128,22 +91,6 @@ void SwitchLevel(Game_t * game, byte level)
 }
 
 
-// Print player character bitmap
-void PrintPlayer(Game_t * game, bool moved)
-{
-  if (moved)
-  {
-    game->level.playerFrame ++;
-    game->level.playerFrame = game->level.playerFrame%3;
-  }
-  
-  if (game->level.playerFrame == 0)
-    game->ab.drawSlowXYBitmap(game->level.playerPosition.x, game->level.playerPosition.y, player1BMP, 6, 10, 1);
-  else if (game->level.playerFrame == 1)
-    game->ab.drawSlowXYBitmap(game->level.playerPosition.x, game->level.playerPosition.y, player2BMP, 6, 10, 1);
-  else
-    game->ab.drawSlowXYBitmap(game->level.playerPosition.x, game->level.playerPosition.y, player3BMP, 6, 10, 1);
-}
 
 void PrintRobots(Game_t * game)
 {
@@ -248,39 +195,9 @@ void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, 
 // Refresh level
 void PrintLevel(Game_t * game)
 {
-  bool moved = false;
 
   CollisionsClear();
-
-  // Player movement
-  if (millis() - game->settings.menuTrigger > PLAYER_TRIGGER_DELAY)
-  {
-    if (game->ab.pressed(UP_BUTTON))
-    {
-      game->level.playerPosition.y--;
-      moved = true;
-    }
-    if (game->ab.pressed(DOWN_BUTTON))
-    {
-      game->level.playerPosition.y++;
-      moved = true;
-    }
-    if (game->ab.pressed(LEFT_BUTTON))
-    {
-      game->level.playerPosition.x--;
-      moved = true;
-    }
-    if (game->ab.pressed(RIGHT_BUTTON))
-    {
-      game->level.playerPosition.x++;
-      moved = true;
-    }
-    if (moved)
-      game->settings.menuTrigger = millis();    
-
-    if (CollisionsAdd(game, game->level.playerPosition.x, game->level.playerPosition.y, 6, 10, PlayerDead, NULL))
-      return;
-  }
+  bool playerMoved = UpdatePlayer(game);
 
   
   // Move robots
@@ -356,7 +273,7 @@ void PrintLevel(Game_t * game)
   game->ab.print(tmp);
 
   // Player
-  PrintPlayer(game, moved);
+  PrintPlayer(game, playerMoved);
 
   //Robots
   PrintRobots(game);
@@ -368,10 +285,6 @@ void PrintLevel(Game_t * game)
 }
 
 
-void PlayerDead(Game_t * game, void * userData)
-{
-  game->gameState = GameState_Menu; 
-}
 
 void RobotDead(Game_t * game, void * userData)
 {

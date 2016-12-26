@@ -1,7 +1,7 @@
 #include "Arduboy.h"
 #include "Robots.h"
 #include "Game.h"
-
+#include "Collisions.h"
 
 #define XLEFT 8
 #define XRIGHT 120
@@ -89,12 +89,16 @@ PROGMEM unsigned const char robot3BMP[] = { // 8 x 8
   0b00100100,
   0b01100110
 };
+
+void PlayerDead(Game_t * game, void * userData);
+void RobotDead(Game_t * game, void * userData);
+
 /// Reset level struct to defaults
 void SwitchLevel(Game_t * game, byte level)
 {
   game->level.currentLevel = level;
   game->level.playerPosition.x = (XRIGHT - XLEFT)/2 + XLEFT; // center X
-  game->level.playerPosition.y = YBOTTOM - 10;
+  game->level.playerPosition.y = YBOTTOM - 15;
   game->level.playerFrame = 0;
   switch (level)
   {
@@ -159,10 +163,6 @@ void PrintRobots(Game_t * game)
   }
 }
 
-bool CollisionDetectionPlayerMap(Game_t * game)
-{
-  return false;
-}
 
 void UpdateBullets(Game_t * game)
 {
@@ -198,7 +198,7 @@ void UpdateBullets(Game_t * game)
   }
 }
 
-void FireRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
+void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
 {
   if (rand()%150 != 0)
     return;
@@ -249,8 +249,10 @@ void FireRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, b
 void PrintLevel(Game_t * game)
 {
   bool moved = false;
-  
-  // Controls
+
+  CollisionsClear();
+
+  // Player movement
   if (millis() - game->settings.menuTrigger > PLAYER_TRIGGER_DELAY)
   {
     if (game->ab.pressed(UP_BUTTON))
@@ -275,11 +277,20 @@ void PrintLevel(Game_t * game)
     }
     if (moved)
       game->settings.menuTrigger = millis();    
+
+    if (CollisionsAdd(game, game->level.playerPosition.x, game->level.playerPosition.y, 6, 10, PlayerDead, NULL))
+      return;
   }
 
+  
   // Move robots
   for (byte r = 0; r < game->level.robotsCount; r++)
   {
+    //Ignore dead robots
+    if (game->level.robots[r].state == 0)
+      continue;
+
+    //Move robot
     if (rand()%game->level.robotsMovement == 0)
     {
       if (game->level.robots[r].position.x < game->level.playerPosition.x)
@@ -292,21 +303,49 @@ void PrintLevel(Game_t * game)
       else
         game->level.robots[r].position.y--;      
     }
-    FireRobotBullet(game->level.bullets, game->level.robots[r].position.x, game->level.robots[r].position.y, game->level.playerPosition.x, game->level.playerPosition.y);
+
+    //Detect collisions
+    if (CollisionsAdd(game, game->level.robots[r].position.x, game->level.robots[r].position.y, 8, 8, RobotDead, (void *)&game->level.robots[r]))
+    {
+      continue;
+    }
+
+    //Eventually shoot
+    SpawnRobotBullet(game->level.bullets, game->level.robots[r].position.x, game->level.robots[r].position.y, game->level.playerPosition.x, game->level.playerPosition.y);
   }
-  
-  //Detect collisions
-  if (CollisionDetectionPlayerMap(game))
-  {
-    game->gameState = GameState_Menu; 
-    return;
-  }
+
+
   game->ab.clear();
   
   //Draw walls
   for (byte l = 0; l < game->level.mapSize; l++)
+  {
+    byte x, y, w, h;
+    
     game->ab.drawLine(game->level.map[l].a.x, game->level.map[l].a.y, game->level.map[l].b.x, game->level.map[l].b.y, 1);
+    if (game->level.map[l].a.x == game->level.map[l].b.x)
+    {
+      //Vertical wall
+      x = game->level.map[l].a.x;
+      y = min(game->level.map[l].a.y, game->level.map[l].b.y);
+      h = abs(game->level.map[l].a.y - game->level.map[l].b.y);
+      w = 1;
+    }
+    else
+    {
+      //Horizontal wall
+      x = min(game->level.map[l].a.x, game->level.map[l].b.x);
+      y = game->level.map[l].a.y;
+      h = 1;
+      w = abs(game->level.map[l].a.x - game->level.map[l].b.x);
+    }
+    if (CollisionsAdd(game, x, y, w, h, NULL, NULL))
+    {
+      //game->gameState = GameState_Menu; 
 
+    }
+  }
+  
   //Text
   game->ab.setTextSize(1);
   game->ab.setCursor(12, 56);
@@ -322,9 +361,31 @@ void PrintLevel(Game_t * game)
   //Robots
   PrintRobots(game);
 
-    //Bullets
+  //Bullets
   UpdateBullets(game);
   
   game->ab.display();
 }
 
+
+void PlayerDead(Game_t * game, void * userData)
+{
+  game->gameState = GameState_Menu; 
+}
+
+void RobotDead(Game_t * game, void * userData)
+{
+  Robot * r = (Robot *) userData;
+  r->state = 0;
+  game->settings.score += 10;
+  
+  for (byte r = 0; r < game->level.robotsCount; r++)
+  {
+    if (game->level.robots[r].state != 0)
+      return;
+  }
+
+  //All robots dead!
+  game->gameState = GameState_Menu; 
+
+}

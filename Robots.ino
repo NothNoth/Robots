@@ -4,35 +4,6 @@
 
 Game_t game;
 
-PROGMEM unsigned const  char bitmap[] = { 
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA,
-                   0xAA, 0x11, 
-                   0x11, 0xAA  };
-                   
-
-PROGMEM const unsigned char arrow[] =
-{
-  0x20,
-  0x10,
-  0xF8,
-  0x10,
-  0x20,
-};
-
-PROGMEM const unsigned char arrow2[] =
-{
-  0x20,
-  0x10,
-  0xF8,
-  0x10,
-  0x20,
-};
-
 
 void setup() 
 {

@@ -11,8 +11,8 @@
 Segment level1[] = { {{XLEFT, YTOP},  {XRIGHT, YTOP}},   // top wall
                      {{XLEFT, YBOTTOM}, {XRIGHT, YBOTTOM}}, //bottom wall
                      {{XLEFT, YTOP}, {XLEFT, YBOTTOM}}, //left wall
-                     {{XRIGHT, YTOP}, {XRIGHT, 16}}, // right wall
-                     {{XRIGHT, 28}, {XRIGHT, YBOTTOM}}, // right wall part 2
+                     {{XRIGHT, YTOP}, {XRIGHT, 12}}, // right wall
+                     {{XRIGHT, 34}, {XRIGHT, YBOTTOM}}, // right wall part 2
                      };
 
 Robot  robots1[] = {{{20, 20}, 1},
@@ -198,6 +198,53 @@ void UpdateBullets(Game_t * game)
   }
 }
 
+void FireRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
+{
+  if (rand()%150 != 0)
+    return;
+
+  for (int b = 0; b < MAX_BULLETS; b++)
+  {        
+    //free firing slot
+    if (!bullets[b].direction.x && !bullets[b].direction.y)
+    {
+      bullets[b].position.x = startX;
+      bullets[b].position.y = startY;
+
+      bullets[b].direction.x = 0;
+      bullets[b].direction.y = 0;
+      char xdist = playerX - startX;
+      char ydist = playerY - startY;
+
+      bullets[b].direction.x = 0;
+      bullets[b].direction.y = 0;
+      if ((xdist > 0) && (abs(xdist) > abs(2*ydist))) // really on the right side
+        bullets[b].direction.x = 1;
+      else if ((xdist < 0) && (abs(xdist) > abs(2*ydist))) // really on the left side
+        bullets[b].direction.x = -1;
+      else if ((ydist > 0) && (abs(ydist) > abs(2*xdist))) // really on the bottom side
+        bullets[b].direction.y = 1;
+      else if ((ydist < 0) && (abs(ydist) > abs(2*xdist))) // really on the top side
+        bullets[b].direction.y = -1;
+      else
+      {                                                     //diag shots
+        if (xdist > 0)
+          bullets[b].direction.x = 1;
+         else
+          bullets[b].direction.x = -1;
+         if (ydist > 0)
+          bullets[b].direction.y = 1;
+         else
+          bullets[b].direction.y = -1;
+      }
+       
+      bullets[b].speed = 3;
+      bullets[b].speedIdx = 0;
+      return;
+    }
+  }
+}
+
 // Refresh level
 void PrintLevel(Game_t * game)
 {
@@ -245,51 +292,7 @@ void PrintLevel(Game_t * game)
       else
         game->level.robots[r].position.y--;      
     }
-
-    if (rand()%10 == 0)
-    {
-      for (int b = 0; b < MAX_BULLETS; b++)
-      {
-      
-        //free firing slot
-        if (!game->level.bullets[b].direction.x && !game->level.bullets[b].direction.y)
-        {
-          game->level.bullets[b].position.x = game->level.robots[r].position.x;
-          game->level.bullets[b].position.y = game->level.robots[r].position.y;
-
-          game->level.bullets[b].direction.x = 0;
-          game->level.bullets[b].direction.y = 0;
-          char xdist = game->level.playerPosition.x - game->level.robots[r].position.x;
-          char ydist = game->level.playerPosition.y - game->level.robots[r].position.y;
-
-          game->level.bullets[b].direction.x = 0;
-          game->level.bullets[b].direction.y = 0;
-          if ((xdist > 0) && (abs(xdist) > abs(2*ydist))) // really on the right side
-            game->level.bullets[b].direction.x = 1;
-          else if ((xdist < 0) && (abs(xdist) > abs(2*ydist))) // really on the left side
-            game->level.bullets[b].direction.x = -1;
-          else if ((ydist > 0) && (abs(ydist) > abs(2*xdist))) // really on the bottom side
-            game->level.bullets[b].direction.y = 1;
-          else if ((ydist < 0) && (abs(ydist) > abs(2*xdist))) // really on the top side
-            game->level.bullets[b].direction.y = -1;
-          else
-          {                                                     //diag shots
-            if (xdist > 0)
-              game->level.bullets[b].direction.x = 1;
-             else
-              game->level.bullets[b].direction.x = -1;
-             if (ydist > 0)
-              game->level.bullets[b].direction.y = 1;
-             else
-              game->level.bullets[b].direction.y = -1;
-          }
-           
-          game->level.bullets[b].speed = 3;
-          game->level.bullets[b].speedIdx = 0;
-          break;
-        }
-      }
-    }
+    FireRobotBullet(game->level.bullets, game->level.robots[r].position.x, game->level.robots[r].position.y, game->level.playerPosition.x, game->level.playerPosition.y);
   }
   
   //Detect collisions

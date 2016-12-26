@@ -83,6 +83,7 @@ void UpdateBullets(Game_t * game)
                           game->level.bullets[b].position.x + 2*game->level.bullets[b].direction.x, game->level.bullets[b].position.y + 2*game->level.bullets[b].direction.y, 
                           1);
       }
+      CollisionsAdd(game, game->level.bullets[b].position.x, game->level.bullets[b].position.y, 1, 1, NULL, NULL);
     }
   }
 }
@@ -101,13 +102,13 @@ void PrintBottomLine(Game_t * game)
 
 void PrintLevel(Game_t * game)
 {
-
   //Draw walls
   for (byte l = 0; l < game->level.mapSize; l++)
   {
-    byte x, y, w, h;
-    
+    int x, y, w, h;
     game->ab.drawLine(game->level.map[l].a.x, game->level.map[l].a.y, game->level.map[l].b.x, game->level.map[l].b.y, 1);
+
+    //Setup collision box for wall
     if (game->level.map[l].a.x == game->level.map[l].b.x)
     {
       //Vertical wall

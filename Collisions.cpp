@@ -13,8 +13,12 @@ void CollisionsClear()
 
 bool CollisionDetect(Box *a, Box *b)
 {
-  return (abs(a->x - b->x) * 2 < (a->w + b->w)) &&
-         (abs(a->y - b->y) * 2 < (a->h + b->h));
+  int X = a->x - b->x;
+  int Y = a->y - b->y;
+  int W = a->w + b->w;
+  int H = a->h + b->h;
+  return (abs(X) * 2 < (W)) &&
+         (abs(Y) * 2 < (H));
 }
 
 

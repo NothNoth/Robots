@@ -39,7 +39,7 @@ void SwitchLevel(Game_t * game, byte level)
       
       game->level.robots = robots1;
       game->level.robotsCount = sizeof(robots1) / sizeof(Robot);
-      game->level.robotsMovement = 180;
+      game->level.robotsMovement = 20;
     break;
     default:
       game->level.map = NULL;   
@@ -52,15 +52,23 @@ void SwitchLevel(Game_t * game, byte level)
 
 
 
+void DeadBullet(void *userData)
+{
+  Bullet * b = (Bullet *) userData;
+
+  b->direction.x = 0;
+  b->direction.y = 0;
+}
 
 void UpdateBullets(Game_t * game)
 {
   for (byte b = 0; b < MAX_BULLETS; b++)
   {
-    if (!game->level.bullets[b].direction.x || !game->level.bullets[b].direction.y)
+    if (!game->level.bullets[b].direction.x && !game->level.bullets[b].direction.y)
       continue;
   
-    game->level.bullets[b].speedIdx+= game->level.bullets[b].speed;
+    game->level.bullets[b].speedIdx += game->level.bullets[b].speed;
+    
     //Time to update bullet position ?
     if (game->level.bullets[b].speed && (game->level.bullets[b].speedIdx == game->level.bullets[b].speed))
     {
@@ -75,8 +83,6 @@ void UpdateBullets(Game_t * game)
         (game->level.bullets[b].position.y <= YTOP))
     {
       memset(&game->level.bullets[b], 0x00, sizeof(Bullet));
-      game->level.bullets[b].direction.x = 0;
-      game->level.bullets[b].direction.y = 0;
     }
     else
     {
@@ -84,7 +90,7 @@ void UpdateBullets(Game_t * game)
                         game->level.bullets[b].position.x + 2*game->level.bullets[b].direction.x, game->level.bullets[b].position.y + 2*game->level.bullets[b].direction.y, 
                         1);
     }
-    CollisionsAdd(game, game->level.bullets[b].position.x, game->level.bullets[b].position.y, 1, 1, NULL, NULL);
+    CollisionsAdd(game, game->level.bullets[b].position.x, game->level.bullets[b].position.y, 4, 4, DeadBullet, &game->level.bullets[b]);
   }
 }
 
@@ -144,8 +150,6 @@ void GameLoop(Game_t * game)
   PrintBottomLine(game);
   PrintPlayer(game, playerMoved);
   PrintNPCs(game);
-
-
   
   game->ab.display();
 }

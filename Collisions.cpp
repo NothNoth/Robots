@@ -1,6 +1,9 @@
 #include "Collisions.h"
 
 #define MAX_COLLISION_ITEMS 32
+//#define SHOW_COLLISIONS_BOXES
+
+
 static CollisionItem items[MAX_COLLISION_ITEMS];
 static int itemsCount = 0;
 
@@ -13,13 +16,18 @@ void CollisionsClear()
 
 bool CollisionDetect(Box *a, Box *b)
 {
-  int X = a->x - b->x;
-  int Y = a->y - b->y;
-  int W = a->w + b->w;
-  int H = a->h + b->h;
+  int X = a->x;
+  X -= b->x;
+  int Y = a->y;
+  Y -= b->y;
+  int W = a->w;
+  W += b->w;
+  int H = a->h;
+  H += b->h;
   return (abs(X) * 2 < (W)) &&
          (abs(Y) * 2 < (H));
 }
+
 
 
 //Add collision item
@@ -29,6 +37,9 @@ bool CollisionsAdd(Game_t * game, byte x, byte y, byte w, byte h, collisionCbPtr
 {
   if (itemsCount + 1 == MAX_COLLISION_ITEMS)
     return false;
+#ifdef SHOW_COLLISIONS_BOXES
+  game->ab.drawRect(x, y, w, h, 0xFF);
+#endif
 
   items[itemsCount].box.x = x;
   items[itemsCount].box.y = y;

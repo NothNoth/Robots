@@ -1,6 +1,8 @@
 #include "NPC.h"
 #include "Collisions.h"
 
+#include "Collisions.h"
+
 PROGMEM unsigned const char robot1BMP[] = { // 8 x 8
   0b00111100,
   0b01100110,
@@ -65,14 +67,12 @@ void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, 
     {
       bullets[b].position.x = startX;
       bullets[b].position.y = startY;
-
       bullets[b].direction.x = 0;
       bullets[b].direction.y = 0;
+      
       char xdist = playerX - startX;
       char ydist = playerY - startY;
 
-      bullets[b].direction.x = 0;
-      bullets[b].direction.y = 0;
       if ((xdist > 0) && (abs(xdist) > abs(2*ydist))) // really on the right side
         bullets[b].direction.x = 1;
       else if ((xdist < 0) && (abs(xdist) > abs(2*ydist))) // really on the left side
@@ -92,7 +92,11 @@ void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, 
          else
           bullets[b].direction.y = -1;
       }
-       
+
+      //Jump first shot iteration (otherwise it would instant collide with shooter)
+      bullets[b].position.x += 5*bullets[b].direction.x;
+      bullets[b].position.y += 5*bullets[b].direction.y;
+      
       bullets[b].speed = 3;
       bullets[b].speedIdx = 0;
       return;

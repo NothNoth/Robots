@@ -327,3 +327,16 @@ void StopMusic(Game_t * game)
   game->settings.sound = false; 
 }
 
+void PlayFire(Game_t * game)
+{
+  if (!game->settings.sound) return;
+  game->ab.tunes.tone(440, 100);
+  game->ab.tunes.tone(220, 70);
+  game->ab.tunes.tone(60, 250);
+}
+
+void PlayExplosion(Game_t * game)
+{
+  if (!game->settings.sound) return;
+  game->ab.tunes.tone(110, 400);
+}

@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "Collisions.h"
+#include "Sound.h"
 
 #define PLAYER_TRIGGER_DELAY 10
 
@@ -97,7 +98,7 @@ bool UpdatePlayer(Game_t * game)
 void PlayerDead(Game_t * game, void * userData)
 {
   SwitchLevel(game, 1);
-  //game->gameState = GameState_Menu; 
+  PlayExplosion(game);
 }
 
 

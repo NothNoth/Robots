@@ -1,7 +1,6 @@
 #include "NPC.h"
 #include "Collisions.h"
-
-#include "Collisions.h"
+#include "Sound.h"
 
 PROGMEM unsigned const char robot1BMP[] = { // 8 x 8
   0b00111100,
@@ -42,6 +41,7 @@ void RobotDead(Game_t * game, void * userData)
   Robot * r = (Robot *) userData;
   r->state = 0;
   game->settings.score += 10;
+  PlayExplosion(game);
   
   for (byte r = 0; r < game->level.robotsCount; r++)
   {
@@ -55,10 +55,10 @@ void RobotDead(Game_t * game, void * userData)
 }
 
 
-void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
+bool SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, byte playerY)
 {
   if (rand()%50 != 0)
-    return;
+    return false;
 
   for (int b = 0; b < MAX_BULLETS; b++)
   {        
@@ -99,9 +99,10 @@ void SpawnRobotBullet(Bullet * bullets, byte startX, byte startY, byte playerX, 
       
       bullets[b].speed = 3;
       bullets[b].speedIdx = 0;
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 
@@ -152,7 +153,8 @@ void UpdateNPCs(Game_t * game)
     }
 
     //Eventually shoot
-    SpawnRobotBullet(game->level.bullets, game->level.robots[r].position.x, game->level.robots[r].position.y, game->level.playerPosition.x, game->level.playerPosition.y);
+    if (SpawnRobotBullet(game->level.bullets, game->level.robots[r].position.x, game->level.robots[r].position.y, game->level.playerPosition.x, game->level.playerPosition.y))
+      PlayFire(game);
   }
 
 }
